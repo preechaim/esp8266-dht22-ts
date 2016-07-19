@@ -1,48 +1,66 @@
-//TODO: deepsleep
-
 #include <DHT.h>
 #include <ESP8266WiFi.h>
-
 ADC_MODE(ADC_VCC);
 
+//// DHT
 #define DHTPIN 2
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 const int dhtRetryInverval = 2 * 1000;
+long nextRead = 1000;
 long dhtErrorCount = 0;
+bool isRead = false;
 
-WiFiClient client;
+//// Wifi connection
 const char* wifiSsid = "WIFISSID";
 const char* wifiPass = "WIFIPASS";
+const long wifiReportInterval = 500;
+long nextWifiReport = 0;
+
+//// Wifi client
+WiFiClient client;
 const char* tsServer = "api.thingspeak.com";
 const char* tsApiKey = "THINGSPEAKKEY";
 const long tsInterval = 300 * 1000;
-long nextTsUpdate = 0;
-
-const long wifiInterval = 500;
-long lastWifi = 0;
+String postStr = "api_key=";
 bool isConnected = false;
+
+//// Max awake time
+const long timeout = 20 *1000;
+long timeoutCount = 0;
+
+void doDeepSleep() {
+  //ESP.rtcUserMemoryWrite(0,
+  //  &dhtErrorCount, sizeof(dhtErrorCount));
+  //ESP.rtcUserMemoryWrite(sizeof(dhtErrorCount),
+  //  &timeoutCount, sizeof(timeoutCount));
+  Serial.print("Deep Sleep (us):");
+  long sleepTime = (tsInterval - millis()) * 1000;
+  if (sleepTime < 1){ 
+    sleepTime = 1;
+  }
+  Serial.println(sleepTime);
+  ESP.deepSleep(sleepTime);
+}
 
 void setup() {
   Serial.begin(9600);
+  //ESP.rtcUserMemoryRead(0,
+  //  &dhtErrorCount, sizeof(dhtErrorCount));
+  //ESP.rtcUserMemoryRead(sizeof(dhtErrorCount),
+  //  &timeoutCount, sizeof(timeoutCount));
   dht.begin();
   WiFi.begin(wifiSsid, wifiPass);
-  delay(2000);
-  Serial.println("Start");
+  Serial.println("Waking up.");
 }
 
 void loop() {
-  if (WiFi.status() != WL_CONNECTED) {
-    if (lastWifi + wifiInterval < millis()){
-      lastWifi = millis();
-      Serial.print("Connecting WiFi:");
-      Serial.println(wifiSsid);
-    }
-    return;
+  if (timeout < millis()){
+    Serial.println("Work is not finished, but it's time to sleep.");
+    timeoutCount += 1;
+    doDeepSleep();
   }
-  if (nextTsUpdate < millis()){
-    client.stop();
-    isConnected = false;
+  if (!isRead && nextRead < millis()){
     Serial.println("Reading...");
 
     /// DHT
@@ -51,7 +69,7 @@ void loop() {
     if (isnan(t) || isnan(h)) {
       Serial.println("DHT Read Error");
       dhtErrorCount++;
-      nextTsUpdate = millis()+dhtRetryInverval;
+      nextRead = millis()+dhtRetryInverval;
       return;
     }
     float hi = dht.computeHeatIndex(t,h);
@@ -67,28 +85,43 @@ void loop() {
     Serial.print("Vcc(mV):");
     Serial.println(vcc);
 
-    String postStr = "api_key=";
+    Serial.print("DHT Error Count:");
+    Serial.println(dhtErrorCount);
+    Serial.print("Awake Timeout Count:");
+    Serial.println(timeoutCount);
+
     postStr += tsApiKey;
     postStr +="&field1=";
     postStr += String(t);
     postStr +="&field2=";
     postStr += String(h);
-    postStr +="&field6=";
+    postStr +="&field5=";
     postStr += String(hi);
-    postStr +="&field7=";
+    postStr +="&field6=";
     postStr += String(dhtErrorCount);
+    postStr +="&field7=";
+    postStr += String(timeoutCount);
     postStr +="&field8=";
     postStr += String(vcc);
     
-    dhtErrorCount = 0;
-    nextTsUpdate = millis() + tsInterval;
-    
     Serial.println(postStr);
-      
+    isRead = true;
+  }    
+  if (WiFi.status() != WL_CONNECTED) {
+    if (nextWifiReport < millis()){
+      nextWifiReport = millis() + wifiReportInterval;
+      Serial.print("Connecting WiFi:");
+      Serial.println(wifiSsid);
+    }
+    return;
+  }
+  if (!isRead){
+    return;
+  }
+  if (!isConnected){
     Serial.print("Connecting to ");
     Serial.println(tsServer);
     if (client.connect(tsServer,80)) {
-      isConnected = true;
       
       Serial.print("Sending data...");
       
@@ -102,24 +135,24 @@ void loop() {
       client.println();
       client.print(postStr);
       
+      isConnected = true;
       Serial.println("Done");
     } else {
       Serial.println("Connection error");
-    }
-    return;
-  }
-  if (isConnected){
-    if (client.connected()){
-      while (client.available()){
-        Serial.print(client.read());
-      }
-    } else {
-      client.stop();
-      Serial.println();
-      Serial.println("Disconnected.");
-      isConnected = false;
+      return;
     }
   }
+  if (client.connected()){
+    while (client.available()){
+      Serial.print(client.read());
+    }
+	  return;
+  }
+  client.stop();
+  Serial.println();
+  Serial.println("Disconnected.");
+
+  timeoutCount = 0;
+  Serial.println("Work is done. Going back to sleep.");
+  doDeepSleep();
 }
-
-
