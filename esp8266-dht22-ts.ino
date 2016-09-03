@@ -6,8 +6,7 @@ ADC_MODE(ADC_VCC);
 #define DHTPIN 2
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
-const int dhtRetryInverval = 2 * 1000;
-long nextRead = 1000;
+const int dhtRetryInterval = 2 * 1000;
 long dhtErrorCount = 0;
 bool isRead = false;
 
@@ -69,7 +68,7 @@ void loop() {
     if (isnan(t) || isnan(h)) {
       Serial.println("DHT Read Error");
       dhtErrorCount++;
-      nextRead = millis()+dhtRetryInverval;
+      nextTsUpdate = millis()+dhtRetryInterval;
       return;
     }
     float hi = dht.computeHeatIndex(t,h);
