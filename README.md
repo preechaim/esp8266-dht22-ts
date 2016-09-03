@@ -20,4 +20,6 @@ Mini DIY weather sensor, ESP8266-01(ESP-01) connected with DHT22 temperature/hum
   - 3.3V to ESP's Vcc, ESP's CH_PD and DHT's Vcc.
   - (recommend) Pull-up ESP's GPIO0,GPIO2,RST pins with 10K resistors.
   - (recommend) A 47uF capacitor between 3.3V and GND.
-  - All GND to ground.
+  - All GND to ground.  
+  
+![](esp01-dht22_bb.png?raw=true)
