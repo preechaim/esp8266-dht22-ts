@@ -7,14 +7,15 @@ Mini DIY weather sensor, ESP8266-01(ESP-01) connected with DHT22 temperature/hum
 - 3.3V Power source
 - Wires, connectors, etc.
 - Arduino IDE with
-  - Board package: "esp8266" by ESP8266 Community 
-  - Library package: "DHT sensor library" by Adafruit
+  - Board package: "esp8266" by ESP8266 Community https://github.com/esp8266/Arduino  
+  - Library package: "DHT sensor library" by Adafruit https://github.com/adafruit/DHT-sensor-library  
 - Thingspeak channel
 
 # Instruction
 1. Change Thingspeak API key, Wifi SSID and password. 
   - Also change the sensor type if you are not using DHT22.
-2. Upload the code to ESP using Arduino IDE.
+2. Upload the code to ESP using Arduino IDE.  
+https://github.com/esp8266/Arduino/blob/master/doc/boards.md#minimal-hardware-setup-for-bootloading-and-usage
 3. Connect ESP with DHT22 and power.
   - DHT22 data pin to ESP GPIO2.
   - 3.3V to ESP's Vcc, ESP's CH_PD and DHT's Vcc.
