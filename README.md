@@ -7,8 +7,8 @@ Mini DIY low-powered weather sensor, ESP8266-01(ESP-01) connected with DHT22 tem
 - 3.3V Power source  
 - Wires, connectors, etc.  
 - Arduino IDE with  
-  - Board package: "esp8266" by ESP8266 Community  
-  - Library package: "DHT sensor library" by Adafruit (Version 1.2.3)  
+  - Board package: "esp8266" by ESP8266 Community https://github.com/esp8266/Arduino  
+  - Library package: "DHT sensor library" by Adafruit (Version 1.2.3) https://github.com/adafruit/DHT-sensor-library  
 - Thingspeak channel  
 
 # Instruction
