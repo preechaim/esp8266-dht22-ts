@@ -8,7 +8,7 @@ Mini DIY low-powered weather sensor, ESP8266-01(ESP-01) connected with DHT22 tem
 - Wires, connectors, etc.  
 - Arduino IDE with  
   - Board package: "esp8266" by ESP8266 Community https://github.com/esp8266/Arduino  
-  - Library package: "DHT sensor library" by Adafruit (Version 1.2.3) https://github.com/adafruit/DHT-sensor-library  
+  - Library package: "DHT sensor library" by Adafruit (Version 1.2.3) https://github.com/adafruit/DHT-sensor-library/tree/1.2.3  
 - Thingspeak channel  
 
 # Instruction
@@ -25,3 +25,12 @@ Mini DIY low-powered weather sensor, ESP8266-01(ESP-01) connected with DHT22 tem
   - All GND to ground.  
   
 ![](esp01-dht22_bb.png?raw=true)
+
+# Testing and result
+The sensor wakes up, reads and sends data to Thingspeak server, then goes to deepsleep for 5 minutes and repeats.  
+
+- Powered with 2x AA batteries (average alkaline, 3V.), directly connected without  regulator.  
+It operated for about one week until the battery voltage is dropped below working level of DHT22.  
+  
+![](esp01-dht22-aa.png?raw=true)
+
